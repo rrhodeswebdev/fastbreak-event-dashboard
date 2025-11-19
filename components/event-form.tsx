@@ -163,54 +163,59 @@ export function EventForm({ event }: EventFormProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="sport_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sport Type</FormLabel>
-                  <Select
-                    key={field.value || 'empty'}
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a sport" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Basketball">Basketball</SelectItem>
-                      <SelectItem value="Soccer">Soccer</SelectItem>
-                      <SelectItem value="Baseball">Baseball</SelectItem>
-                      <SelectItem value="Football">Football</SelectItem>
-                      <SelectItem value="Volleyball">Volleyball</SelectItem>
-                      <SelectItem value="Tennis">Tennis</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="sport_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sport Type</FormLabel>
+                    <Select
+                      key={field.value || 'empty'}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a sport" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Basketball">Basketball</SelectItem>
+                        <SelectItem value="Soccer">Soccer</SelectItem>
+                        <SelectItem value="Baseball">Baseball</SelectItem>
+                        <SelectItem value="Football">Football</SelectItem>
+                        <SelectItem value="Volleyball">Volleyball</SelectItem>
+                        <SelectItem value="Tennis">Tennis</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Select the type of sport for this event.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="date_time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date and Time</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    When will the event take place?
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name="date_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date and Time</FormLabel>
+                    <FormControl>
+                      <Input type="datetime-local" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      When will the event take place?
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
