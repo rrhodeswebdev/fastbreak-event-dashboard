@@ -17,28 +17,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { handleError, ErrorType } from '@/lib/error-handler'
 import { toast } from 'sonner'
+import { formatDateTimeForDisplay } from '@/lib/utils'
+import { SUCCESS_MESSAGES } from '@/lib/constants'
 
 type Props = { event: Tables<'events'> }
 
-function formatDateTime(dateTimeString: string) {
-  const date = new Date(dateTimeString)
-  return {
-    date: date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }),
-    time: date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }),
-  }
-}
-
 export function EventCard({ event }: Props) {
-  const { date, time } = formatDateTime(event.date_time)
+  const { date, time } = formatDateTimeForDisplay(event.date_time)
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
 
@@ -62,7 +47,7 @@ export function EventCard({ event }: Props) {
         })
         setIsDeleting(false)
       } else if (result?.success) {
-        toast.success('Event deleted successfully!')
+        toast.success(SUCCESS_MESSAGES.EVENT_DELETED)
       }
     } catch (error) {
       handleError(error, {
@@ -144,11 +129,11 @@ export function EventCard({ event }: Props) {
             <span>{time}</span>
           </div>
         </div>
-        {event.venues && event.venues.length > 0 && (
+        {(event.venues?.length ?? 0) > 0 && (
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
             <div className="flex flex-wrap gap-1.5">
-              {event.venues.map((venue, index) => (
+              {event.venues?.map((venue, index) => (
                 <span
                   key={index}
                   className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground"

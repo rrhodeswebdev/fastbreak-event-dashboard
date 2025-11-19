@@ -1,8 +1,6 @@
 import { Suspense } from 'react'
 import { BasicLoading } from '@/components/basic-loading'
 import { EditEventContent } from '@/components/edit-event-content'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import { BackLink } from '@/components/back-link'
 
 type Props = {

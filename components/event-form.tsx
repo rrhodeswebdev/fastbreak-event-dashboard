@@ -30,11 +30,17 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { createEvent, updateEvent } from '@/actions/events'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Tables } from '@/types/database.types'
 import { handleError, ErrorType } from '@/lib/error-handler'
 import { toast } from 'sonner'
+import { SPORT_TYPES, SUCCESS_MESSAGES } from '@/lib/constants'
+import {
+  formatDateTimeForInput,
+  venuesStringToArray,
+  venuesArrayToString,
+} from '@/lib/utils'
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -62,48 +68,29 @@ export function EventForm({ event }: EventFormProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      sport_type: '',
-      date_time: '',
-      description: '',
-      venues: '',
-    },
+    defaultValues: event
+      ? {
+          name: event.name,
+          sport_type: event.sport_type,
+          date_time: formatDateTimeForInput(event.date_time),
+          description: event.description || '',
+          venues: venuesArrayToString(event.venues),
+        }
+      : {
+          name: '',
+          sport_type: '',
+          date_time: '',
+          description: '',
+          venues: '',
+        },
   })
-
-  useEffect(() => {
-    if (event) {
-      const formatDateTimeLocal = (isoString: string) => {
-        const date = new Date(isoString)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const hours = String(date.getHours()).padStart(2, '0')
-        const minutes = String(date.getMinutes()).padStart(2, '0')
-        return `${year}-${month}-${day}T${hours}:${minutes}`
-      }
-
-      form.reset({
-        name: event.name,
-        sport_type: event.sport_type,
-        date_time: formatDateTimeLocal(event.date_time),
-        description: event.description || '',
-        venues: event.venues ? event.venues.join(', ') : '',
-      })
-    }
-  }, [event, form])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     setError(null)
 
     try {
-      const venuesArray = values.venues
-        ? values.venues
-            .split(',')
-            .map((v) => v.trim())
-            .filter(Boolean)
-        : undefined
+      const venuesArray = venuesStringToArray(values.venues)
 
       const localDate = new Date(values.date_time)
       const dateTimeISO = localDate.toISOString()
@@ -135,7 +122,7 @@ export function EventForm({ event }: EventFormProps) {
           form.reset()
         }
         toast.success(
-          isEditMode ? 'Event updated successfully!' : 'Event created successfully!'
+          isEditMode ? SUCCESS_MESSAGES.EVENT_UPDATED : SUCCESS_MESSAGES.EVENT_CREATED
         )
         setIsSubmitting(false)
         router.push('/')
@@ -190,25 +177,18 @@ export function EventForm({ event }: EventFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sport Type</FormLabel>
-                    <Select
-                      key={field.value || 'empty'}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a sport" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Basketball">Basketball</SelectItem>
-                        <SelectItem value="Soccer">Soccer</SelectItem>
-                        <SelectItem value="Baseball">Baseball</SelectItem>
-                        <SelectItem value="Football">Football</SelectItem>
-                        <SelectItem value="Volleyball">Volleyball</SelectItem>
-                        <SelectItem value="Tennis">Tennis</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        {SPORT_TYPES.map((sport) => (
+                          <SelectItem key={sport} value={sport}>
+                            {sport}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormDescription>

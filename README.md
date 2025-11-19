@@ -6,7 +6,7 @@ A full-stack Sports Event Management application where users can create, view, e
 
 ## Technical Stack
 
-- **Framework**: Next.js 15 with App Router
+- **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
@@ -89,5 +89,8 @@ lib/
 │   ├── client.ts        # Client-side Supabase
 │   ├── server.ts        # Server-side Supabase
 │   └── proxy.ts         # Session middleware
-└── error-handler.ts     # Error handling utility
+├── auth-helpers.ts      # Authentication & authorization utilities
+├── constants.ts         # App-wide constants (sport types, messages, etc.)
+├── error-handler.ts     # Error handling utility
+└── utils.ts             # Utility functions (date formatting, venue parsing)
 ```

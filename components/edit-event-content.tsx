@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { EventForm } from '@/components/event-form'
 import { redirect } from 'next/navigation'
+import { EVENT_SELECT_FIELDS } from '@/lib/constants'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -22,9 +23,7 @@ export async function EditEventContent({ params }: Props) {
 
   const { data: event, error: fetchError } = await supabase
     .from('events')
-    .select(
-      'id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id',
-    )
+    .select(EVENT_SELECT_FIELDS)
     .eq('id', id)
     .single()
 

@@ -5,28 +5,18 @@ import { Search, X } from 'lucide-react'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
+import { SPORT_TYPES } from '@/lib/constants'
 
 type Props = {
   initialName: string
   initialSport: string
 }
 
-const SPORT_TYPES = [
-  'Basketball',
-  'Soccer',
-  'Football',
-  'Baseball',
-  'Volleyball',
-  'Tennis',
-  'Hockey',
-  'Other',
-]
-
 export function EventsFilter({ initialName, initialSport }: Props) {
   const router = useRouter()
   const nameInputRef = useRef<HTMLInputElement>(null)
   const sportSelectRef = useRef<HTMLSelectElement>(null)
-  const hasActiveFilters = initialName || initialSport
+  const hasActiveFilters = Boolean(initialName || initialSport)
 
   useEffect(() => {
     if (nameInputRef.current) {

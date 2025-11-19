@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { TablesInsert } from '@/types/database.types'
+import { getAuthenticatedUser, verifyEventOwnership } from '@/lib/auth-helpers'
+import { ERROR_MESSAGES } from '@/lib/constants'
 
 export async function createEvent(formData: {
   name: string
@@ -11,18 +13,15 @@ export async function createEvent(formData: {
   description?: string
   venues?: string[]
 }) {
-  const supabase = await createClient()
+  const { user, error: authError } = await getAuthenticatedUser()
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
+  if (authError || !user) {
     return {
-      error: 'You must be logged in to create an event',
+      error: `${ERROR_MESSAGES.AUTH_REQUIRED} to create an event`,
     }
   }
+
+  const supabase = await createClient()
 
   const eventData: TablesInsert<'events'> = {
     name: formData.name,
@@ -42,7 +41,7 @@ export async function createEvent(formData: {
   if (error) {
     console.error('Error creating event:', error)
     return {
-      error: error.message || 'Failed to create event',
+      error: error.message || ERROR_MESSAGES.EVENT_CREATE_FAILED,
     }
   }
 
@@ -64,40 +63,27 @@ export async function updateEvent(
     venues?: string[]
   },
 ) {
+  const { user, error: authError } = await getAuthenticatedUser()
+
+  if (authError || !user) {
+    return {
+      error: `${ERROR_MESSAGES.AUTH_REQUIRED} to update an event`,
+    }
+  }
+
+  const { authorized, error: ownershipError } = await verifyEventOwnership(
+    eventId,
+    user.id,
+  )
+
+  if (!authorized || ownershipError) {
+    return {
+      error: ownershipError || ERROR_MESSAGES.PERMISSION_DENIED,
+    }
+  }
+
   const supabase = await createClient()
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    return {
-      error: 'You must be logged in to update an event',
-    }
-  }
-
-  // First, verify the event exists and belongs to the user
-  const { data: event, error: fetchError } = await supabase
-    .from('events')
-    .select('user_id')
-    .eq('id', eventId)
-    .single()
-
-  if (fetchError) {
-    console.error('Error fetching event:', fetchError)
-    return {
-      error: 'Event not found',
-    }
-  }
-
-  if (event.user_id !== user.id) {
-    return {
-      error: "You don't have permission to update this event",
-    }
-  }
-
-  // Update the event
   const { data, error } = await supabase
     .from('events')
     .update({
@@ -115,7 +101,7 @@ export async function updateEvent(
   if (error) {
     console.error('Error updating event:', error)
     return {
-      error: error.message || 'Failed to update event',
+      error: error.message || ERROR_MESSAGES.EVENT_UPDATE_FAILED,
     }
   }
 
@@ -129,37 +115,26 @@ export async function updateEvent(
 }
 
 export async function deleteEvent(eventId: string) {
+  const { user, error: authError } = await getAuthenticatedUser()
+
+  if (authError || !user) {
+    return {
+      error: `${ERROR_MESSAGES.AUTH_REQUIRED} to delete an event`,
+    }
+  }
+
+  const { authorized, error: ownershipError } = await verifyEventOwnership(
+    eventId,
+    user.id,
+  )
+
+  if (!authorized || ownershipError) {
+    return {
+      error: ownershipError || ERROR_MESSAGES.PERMISSION_DENIED,
+    }
+  }
+
   const supabase = await createClient()
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
-
-  if (userError || !user) {
-    return {
-      error: 'You must be logged in to delete an event',
-    }
-  }
-
-  const { data: event, error: fetchError } = await supabase
-    .from('events')
-    .select('user_id')
-    .eq('id', eventId)
-    .single()
-
-  if (fetchError) {
-    console.error('Error fetching event:', fetchError)
-    return {
-      error: 'Event not found',
-    }
-  }
-
-  if (event.user_id !== user.id) {
-    return {
-      error: "You don't have permission to delete this event",
-    }
-  }
 
   const { error: deleteError } = await supabase
     .from('events')
@@ -169,7 +144,7 @@ export async function deleteEvent(eventId: string) {
   if (deleteError) {
     console.error('Error deleting event:', deleteError)
     return {
-      error: deleteError.message || 'Failed to delete event',
+      error: deleteError.message || ERROR_MESSAGES.EVENT_DELETE_FAILED,
     }
   }
 

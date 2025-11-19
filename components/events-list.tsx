@@ -1,7 +1,7 @@
 import type { Tables } from '@/types/database.types'
 import { createClient } from '@/lib/supabase/server'
 import { EventCard } from './event-card'
-import { cacheLife } from 'next/cache'
+import { EVENT_SELECT_FIELDS } from '@/lib/constants'
 
 type Event = Tables<'events'>
 
@@ -13,11 +13,7 @@ type Props = {
 export async function EventsList({ nameFilter, sportFilter }: Props) {
   const supabase = await createClient()
 
-  let query = supabase
-    .from('events')
-    .select(
-      'id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id',
-    )
+  let query = supabase.from('events').select(EVENT_SELECT_FIELDS)
 
   if (nameFilter) {
     query = query.ilike('name', `%${nameFilter}%`)
