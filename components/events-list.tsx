@@ -5,14 +5,29 @@ import { cacheLife } from 'next/cache'
 
 type Event = Tables<'events'>
 
-export async function EventsList() {
+type Props = {
+  nameFilter?: string
+  sportFilter?: string
+}
+
+export async function EventsList({ nameFilter, sportFilter }: Props) {
   const supabase = await createClient()
-  const { data, error } = await supabase
+
+  let query = supabase
     .from('events')
     .select(
       'id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id',
     )
-    .order('updated_at', { ascending: false })
+
+  if (nameFilter) {
+    query = query.ilike('name', `%${nameFilter}%`)
+  }
+
+  if (sportFilter) {
+    query = query.eq('sport_type', sportFilter)
+  }
+
+  const { data, error } = await query.order('updated_at', { ascending: false })
 
   if (error) {
     console.error(error)
@@ -22,10 +37,14 @@ export async function EventsList() {
   const events: Event[] = data ?? []
 
   if (events.length === 0) {
+    const hasFilters = nameFilter || sportFilter
+    
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <p className="text-muted-foreground text-center">
-          No events found. Create your first event to get started!
+          {hasFilters
+            ? 'No events found matching your filters. Try adjusting your search criteria.'
+            : 'No events found. Create your first event to get started!'}
         </p>
       </div>
     )

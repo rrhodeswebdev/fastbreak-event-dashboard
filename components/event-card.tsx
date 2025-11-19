@@ -9,7 +9,7 @@ import {
 } from './ui/card'
 import { Badge } from './ui/badge'
 import type { Tables } from '@/types/database.types'
-import { Calendar, MapPin, Trash2, Eye } from 'lucide-react'
+import { Calendar, MapPin, Trash2, Pencil } from 'lucide-react'
 import { Button } from './ui/button'
 import { Spinner } from './ui/spinner'
 import { deleteEvent } from '@/actions/events'
@@ -57,7 +57,6 @@ export function EventCard({ event }: Props) {
         alert(result.error)
         setIsDeleting(false)
       }
-      // If successful, the page will revalidate and the card will disappear
     } catch (error) {
       console.error('Error deleting event:', error)
       alert('Failed to delete event')
@@ -81,24 +80,24 @@ export function EventCard({ event }: Props) {
           <Spinner className="size-8" />
         </div>
       )}
-      {/* Blurry overlay on hover */}
       <div className="absolute inset-0 bg-background/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
-
-      {/* View icon in center */}
       <div className="absolute inset-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleCardClick}
-          disabled={isDeleting}
-          className="h-12 w-12 bg-background/80 hover:bg-primary/20 text-foreground hover:text-foreground pointer-events-auto"
-          aria-label="View event"
-        >
-          <Eye className="h-6 w-6" />
-        </Button>
+        <div className="flex flex-col items-center gap-2 pointer-events-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCardClick}
+            disabled={isDeleting}
+            className="h-12 w-12 bg-background/80 hover:bg-primary/20 text-foreground hover:text-foreground"
+            aria-label="Edit event"
+          >
+            <Pencil className="h-6 w-6" />
+          </Button>
+          <span className="text-sm font-medium text-foreground bg-background/80 px-2 py-1 rounded">
+            View/Edit
+          </span>
+        </div>
       </div>
-
-      {/* Delete button in top-right */}
       <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
