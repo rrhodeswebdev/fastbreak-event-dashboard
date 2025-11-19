@@ -1,6 +1,7 @@
 import type { Tables } from "@/types/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { EventCard } from "./event-card";
+import { cacheLife } from "next/cache";
 
 type Event = Tables<"events">;
 
@@ -10,7 +11,8 @@ export async function EventsList() {
     .from("events")
     .select(
       "id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id",
-    );
+    )
+    .order("updated_at", { ascending: false });
 
   if (error) {
     console.error(error);

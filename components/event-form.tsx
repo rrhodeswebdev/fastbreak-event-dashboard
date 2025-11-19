@@ -29,9 +29,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createEvent } from "@/actions/events";
-import { useState } from "react";
+import { createEvent, updateEvent } from "@/actions/events";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { Tables } from "@/types/database.types";
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -47,10 +48,15 @@ const formSchema = z.object({
   venues: z.string().optional(),
 });
 
-export function CreateEventForm() {
+type EventFormProps = {
+  event?: Tables<"events">;
+};
+
+export function EventForm({ event }: EventFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const isEditMode = !!event;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,6 +69,30 @@ export function CreateEventForm() {
     },
   });
 
+  // Populate form with event data in edit mode
+  useEffect(() => {
+    if (event) {
+      // Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
+      const formatDateTimeLocal = (isoString: string) => {
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+
+      form.reset({
+        name: event.name,
+        sport_type: event.sport_type,
+        date_time: formatDateTimeLocal(event.date_time),
+        description: event.description || "",
+        venues: event.venues ? event.venues.join(", ") : "",
+      });
+    }
+  }, [event, form]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     setError(null);
@@ -72,19 +102,28 @@ export function CreateEventForm() {
         ? values.venues.split(",").map((v) => v.trim()).filter(Boolean)
         : undefined;
 
-      const result = await createEvent({
+      const formData = {
         name: values.name,
         sport_type: values.sport_type,
         date_time: values.date_time,
         description: values.description,
         venues: venuesArray,
-      });
+      };
+
+      let result;
+      if (isEditMode && event) {
+        result = await updateEvent(event.id, formData);
+      } else {
+        result = await createEvent(formData);
+      }
 
       if (result?.error) {
         setError(result.error);
         setIsSubmitting(false);
       } else if (result?.success) {
-        form.reset();
+        if (!isEditMode) {
+          form.reset();
+        }
         setIsSubmitting(false);
         router.push("/");
       }
@@ -97,9 +136,11 @@ export function CreateEventForm() {
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
-        <CardTitle>Create New Event</CardTitle>
+        <CardTitle>{isEditMode ? "Edit Event" : "Create New Event"}</CardTitle>
         <CardDescription>
-          Fill in the details below to create a new sports event.
+          {isEditMode
+            ? "Update the details below to edit this event."
+            : "Fill in the details below to create a new sports event."}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -128,7 +169,12 @@ export function CreateEventForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sport Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    key={field.value || 'empty'}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a sport" />
@@ -214,7 +260,13 @@ export function CreateEventForm() {
             )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Creating Event..." : "Create Event"}
+              {isSubmitting
+                ? isEditMode
+                  ? "Updating Event..."
+                  : "Creating Event..."
+                : isEditMode
+                ? "Update Event"
+                : "Create Event"}
             </Button>
           </form>
         </Form>
