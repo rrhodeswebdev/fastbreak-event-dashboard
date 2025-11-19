@@ -54,3 +54,55 @@ export async function createEvent(formData: {
   };
 }
 
+export async function deleteEvent(eventId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return {
+      error: "You must be logged in to delete an event",
+    };
+  }
+
+  const { data: event, error: fetchError } = await supabase
+    .from("events")
+    .select("user_id")
+    .eq("id", eventId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching event:", fetchError);
+    return {
+      error: "Event not found",
+    };
+  }
+
+  if (event.user_id !== user.id) {
+    return {
+      error: "You don't have permission to delete this event",
+    };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("events")
+    .delete()
+    .eq("id", eventId);
+
+  if (deleteError) {
+    console.error("Error deleting event:", deleteError);
+    return {
+      error: deleteError.message || "Failed to delete event",
+    };
+  }
+
+  revalidatePath("/");
+
+  return {
+    success: true,
+  };
+}
+
