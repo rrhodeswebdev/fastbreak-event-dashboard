@@ -102,10 +102,18 @@ export function EventForm({ event }: EventFormProps) {
         ? values.venues.split(",").map((v) => v.trim()).filter(Boolean)
         : undefined;
 
+      // Convert datetime-local string to ISO string with timezone
+      // datetime-local gives us "YYYY-MM-DDTHH:mm" which is in local time
+      // We need to treat this as local time and convert to ISO with timezone
+      // Create a Date object from the datetime-local string (it will be interpreted as local time)
+      // Then convert to ISO string which will be in UTC
+      const localDate = new Date(values.date_time);
+      const dateTimeISO = localDate.toISOString();
+
       const formData = {
         name: values.name,
         sport_type: values.sport_type,
-        date_time: values.date_time,
+        date_time: dateTimeISO,
         description: values.description,
         venues: venuesArray,
       };
