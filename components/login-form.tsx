@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { handleError, ErrorType } from '@/lib/error-handler'
 
 export function LoginForm({
   className,
@@ -41,7 +42,11 @@ export function LoginForm({
       // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push('/')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      const errorResponse = handleError(error, {
+        context: 'Login',
+        errorType: ErrorType.CLIENT_ERROR,
+      })
+      setError(errorResponse.message)
     } finally {
       setIsLoading(false)
     }

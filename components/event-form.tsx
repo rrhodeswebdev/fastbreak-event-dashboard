@@ -33,6 +33,7 @@ import { createEvent, updateEvent } from '@/actions/events'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Tables } from '@/types/database.types'
+import { handleError, ErrorType } from '@/lib/error-handler'
 import { toast } from 'sonner'
 
 const formSchema = z.object({
@@ -123,8 +124,11 @@ export function EventForm({ event }: EventFormProps) {
       }
 
       if (result?.error) {
-        setError(result.error)
-        toast.error(result.error)
+        const errorResponse = handleError(result.error, {
+          context: isEditMode ? 'Updating event' : 'Creating event',
+          errorType: ErrorType.SERVER_ERROR,
+        })
+        setError(errorResponse.message)
         setIsSubmitting(false)
       } else if (result?.success) {
         if (!isEditMode) {
@@ -137,9 +141,11 @@ export function EventForm({ event }: EventFormProps) {
         router.push('/')
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
-      setError(errorMessage)
-      toast.error(errorMessage)
+      const errorResponse = handleError(err, {
+        context: isEditMode ? 'Updating event' : 'Creating event',
+        errorType: ErrorType.SERVER_ERROR,
+      })
+      setError(errorResponse.message)
       setIsSubmitting(false)
     }
   }

@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { handleError, ErrorType } from '@/lib/error-handler'
 
 export function UpdatePasswordForm({
   className,
@@ -36,7 +37,11 @@ export function UpdatePasswordForm({
       // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push('/')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      const errorResponse = handleError(error, {
+        context: 'Update password',
+        errorType: ErrorType.CLIENT_ERROR,
+      })
+      setError(errorResponse.message)
     } finally {
       setIsLoading(false)
     }

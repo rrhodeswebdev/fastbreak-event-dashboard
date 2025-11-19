@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { handleError, ErrorType } from '@/lib/error-handler'
 
 export function SignUpForm({
   className,
@@ -34,7 +35,11 @@ export function SignUpForm({
     setError(null)
 
     if (password !== repeatPassword) {
-      setError('Passwords do not match')
+      const errorResponse = handleError('Passwords do not match', {
+        context: 'Sign up',
+        errorType: ErrorType.CLIENT_ERROR,
+      })
+      setError(errorResponse.message)
       setIsLoading(false)
       return
     }
@@ -50,7 +55,11 @@ export function SignUpForm({
       if (error) throw error
       router.push('/auth/sign-up-success')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      const errorResponse = handleError(error, {
+        context: 'Sign up',
+        errorType: ErrorType.CLIENT_ERROR,
+      })
+      setError(errorResponse.message)
     } finally {
       setIsLoading(false)
     }
