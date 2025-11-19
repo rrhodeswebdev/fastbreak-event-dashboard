@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Card,
@@ -6,70 +6,70 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./ui/card";
-import { Badge } from "./ui/badge";
-import type { Tables } from "@/types/database.types";
-import { Calendar, MapPin, Trash2, Eye } from "lucide-react";
-import { Button } from "./ui/button";
-import { Spinner } from "./ui/spinner";
-import { deleteEvent } from "@/actions/events";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+} from './ui/card'
+import { Badge } from './ui/badge'
+import type { Tables } from '@/types/database.types'
+import { Calendar, MapPin, Trash2, Eye } from 'lucide-react'
+import { Button } from './ui/button'
+import { Spinner } from './ui/spinner'
+import { deleteEvent } from '@/actions/events'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-type Props = { event: Tables<"events"> };
+type Props = { event: Tables<'events'> }
 
 function formatDateTime(dateTimeString: string) {
-  const date = new Date(dateTimeString);
+  const date = new Date(dateTimeString)
   return {
-    date: date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+    date: date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     }),
-    time: date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
+    time: date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
       hour12: true,
     }),
-  };
+  }
 }
 
 export function EventCard({ event }: Props) {
-  const { date, time } = formatDateTime(event.date_time);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
+  const { date, time } = formatDateTime(event.date_time)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
 
   const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    if (!confirm("Are you sure you want to delete this event?")) {
-      return;
+    if (!confirm('Are you sure you want to delete this event?')) {
+      return
     }
 
-    setIsDeleting(true);
+    setIsDeleting(true)
 
     try {
-      const result = await deleteEvent(event.id);
+      const result = await deleteEvent(event.id)
 
       if (result?.error) {
-        alert(result.error);
-        setIsDeleting(false);
+        alert(result.error)
+        setIsDeleting(false)
       }
       // If successful, the page will revalidate and the card will disappear
     } catch (error) {
-      console.error("Error deleting event:", error);
-      alert("Failed to delete event");
-      setIsDeleting(false);
+      console.error('Error deleting event:', error)
+      alert('Failed to delete event')
+      setIsDeleting(false)
     }
-  };
+  }
 
   const handleCardClick = () => {
     if (!isDeleting) {
-      router.push(`/event/edit/${event.id}`);
+      router.push(`/event/edit/${event.id}`)
     }
-  };
+  }
 
   return (
     <Card
@@ -152,5 +152,5 @@ export function EventCard({ event }: Props) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

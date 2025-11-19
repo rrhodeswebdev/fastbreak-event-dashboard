@@ -1,25 +1,25 @@
-import type { Tables } from "@/types/database.types";
-import { createClient } from "@/lib/supabase/server";
-import { EventCard } from "./event-card";
-import { cacheLife } from "next/cache";
+import type { Tables } from '@/types/database.types'
+import { createClient } from '@/lib/supabase/server'
+import { EventCard } from './event-card'
+import { cacheLife } from 'next/cache'
 
-type Event = Tables<"events">;
+type Event = Tables<'events'>
 
 export async function EventsList() {
-  const supabase = await createClient();
+  const supabase = await createClient()
   const { data, error } = await supabase
-    .from("events")
+    .from('events')
     .select(
-      "id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id",
+      'id, name, sport_type, date_time, description, venues, created_at, updated_at, user_id',
     )
-    .order("updated_at", { ascending: false });
+    .order('updated_at', { ascending: false })
 
   if (error) {
-    console.error(error);
-    return <div>Error loading events</div>;
+    console.error(error)
+    return <div>Error loading events</div>
   }
 
-  const events: Event[] = data ?? [];
+  const events: Event[] = data ?? []
 
   if (events.length === 0) {
     return (
@@ -28,7 +28,7 @@ export async function EventsList() {
           No events found. Create your first event to get started!
         </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -39,5 +39,5 @@ export async function EventsList() {
         ))}
       </div>
     </div>
-  );
+  )
 }

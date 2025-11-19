@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { Suspense } from "react";
-import { BasicLoading } from "@/components/basic-loading";
-import { EventsList } from "@/components/events-list";
+import Link from 'next/link'
+import { Suspense } from 'react'
+import { BasicLoading } from '@/components/basic-loading'
+import { EventsList } from '@/components/events-list'
 
 export default async function Home() {
   return (
@@ -20,5 +20,5 @@ export default async function Home() {
         </Suspense>
       </div>
     </main>
-  );
+  )
 }
