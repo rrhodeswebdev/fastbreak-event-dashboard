@@ -33,6 +33,7 @@ import { createEvent, updateEvent } from '@/actions/events'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Tables } from '@/types/database.types'
+import { toast } from 'sonner'
 
 const formSchema = z.object({
   name: z.string().min(3, {
@@ -69,10 +70,8 @@ export function EventForm({ event }: EventFormProps) {
     },
   })
 
-  // Populate form with event data in edit mode
   useEffect(() => {
     if (event) {
-      // Convert ISO datetime to datetime-local format (YYYY-MM-DDTHH:mm)
       const formatDateTimeLocal = (isoString: string) => {
         const date = new Date(isoString)
         const year = date.getFullYear()
@@ -105,11 +104,6 @@ export function EventForm({ event }: EventFormProps) {
             .filter(Boolean)
         : undefined
 
-      // Convert datetime-local string to ISO string with timezone
-      // datetime-local gives us "YYYY-MM-DDTHH:mm" which is in local time
-      // We need to treat this as local time and convert to ISO with timezone
-      // Create a Date object from the datetime-local string (it will be interpreted as local time)
-      // Then convert to ISO string which will be in UTC
       const localDate = new Date(values.date_time)
       const dateTimeISO = localDate.toISOString()
 
@@ -130,16 +124,22 @@ export function EventForm({ event }: EventFormProps) {
 
       if (result?.error) {
         setError(result.error)
+        toast.error(result.error)
         setIsSubmitting(false)
       } else if (result?.success) {
         if (!isEditMode) {
           form.reset()
         }
+        toast.success(
+          isEditMode ? 'Event updated successfully!' : 'Event created successfully!'
+        )
         setIsSubmitting(false)
         router.push('/')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      setError(errorMessage)
+      toast.error(errorMessage)
       setIsSubmitting(false)
     }
   }

@@ -15,6 +15,7 @@ import { Spinner } from './ui/spinner'
 import { deleteEvent } from '@/actions/events'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 type Props = { event: Tables<'events'> }
 
@@ -54,12 +55,14 @@ export function EventCard({ event }: Props) {
       const result = await deleteEvent(event.id)
 
       if (result?.error) {
-        alert(result.error)
+        toast.error(result.error)
         setIsDeleting(false)
+      } else if (result?.success) {
+        toast.success('Event deleted successfully!')
       }
     } catch (error) {
       console.error('Error deleting event:', error)
-      alert('Failed to delete event')
+      toast.error('Failed to delete event')
       setIsDeleting(false)
     }
   }
